@@ -25,6 +25,13 @@ namespace Homework_06
 
             return array;
         }
+        static string[] addToArray(ref string[] array, int i)
+        {
+            Array.Resize(ref array, array.Length + 1);
+            array[array.Length - 1] = i.ToString();
+
+            return array;
+        }
         #region CALC
 
         /// <summary>
@@ -47,10 +54,10 @@ namespace Homework_06
                 for (int i = 0; i < list.Count; i++)
                 {
                     string line = list[i];
-                    string[] arrayString = line.Split(';');
-                    bool haveMult = false;
-                    // разбираем строку с разделителями. да, массив был бы проще , но в итоге надо писать строки в текстовый документ, поэтому буду сохранять 
-                    // в виде CSV
+                    string[] arrayString = line.Split(';'); // преобразуем в массив по разделителям ;
+                    bool haveMult = false; // делиться ли на текущий элемент 
+                    // разбираем строку с разделителями. да, массив был бы проще , но в итоге надо писать строки в текстовый документ,
+                    // поэтому буду сохранять в виде CSV
                     foreach (var arString in arrayString)
                     {
                         int _arInt = int.Parse(arString);
@@ -62,8 +69,9 @@ namespace Homework_06
                     }
                     if (!haveMult)
                     {
-                        Array.Resize(ref arrayString, arrayString.Length + 1);
-                        arrayString[arrayString.Length - 1] = nString;
+                        
+                        addToArray(ref arrayString, n);
+
                         needNewLine = false;
                         list[i] = String.Join(";", arrayString);
                         break;
