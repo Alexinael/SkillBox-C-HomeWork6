@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.IO;
+using System.Windows.Forms;
 
 namespace Homework_06
 {
@@ -24,14 +25,16 @@ namespace Homework_06
             return array;
         }
         #region CALC
+
         /// <summary>
         /// Калькуляция
         /// </summary>
         /// <param name="inputInt">Входное число</param>
+        /// <param name="">arrayList</param>
         /// <returns></returns>
-        static int calc(int inputInt = 0)
-        {
-            if (inputInt < 1 || inputInt >= 1_000_000_000) return 0; // Рабочий диапазон 1-1_000_000_000
+        static List<string> calc(int inputInt = 0)
+            {
+            if (inputInt < 1 || inputInt >= 1_000_000_000) return new List<string>(); // Рабочий диапазон 1-1_000_000_000
 
             int m = 0;
             List<string> list = new List<string>();
@@ -78,15 +81,16 @@ namespace Homework_06
             {
                 for (int i = 0; i < line.Length; i++)
                 {
-                    Console.Write($"{line[i]}");
+                    Console.Write(line[i].ToString().Replace(';','\t'));
                 }
                 Console.WriteLine("\n");
             }
 
-            return list.Count;
+            return list;
         }
         #endregion
 
+        [STAThread]
         static void Main(string[] args)
         {
 
@@ -151,22 +155,70 @@ namespace Homework_06
             ///   В обязательном порядке создать несколько собственных методов
             ///   
             int N = 50;
-            Console.WriteLine($"TYPE 1: variable N={N}\n");
+            Console.WriteLine($"TYPE 1: Входящее N={N}\n");
             DateTime dateTimeStart = DateTime.Now;
-            int M = calc(N);
+            int M = calc(N).Count;
             Console.WriteLine($"M = {M}\n");
             TimeSpan timeSpan = DateTime.Now - dateTimeStart;
             Console.WriteLine($"Выполнено за {timeSpan}\n");
 
-            string file = "";
-            Console.WriteLine($"TYPE 2: varibale N from {file} = {N}");
+            if (answerNo("Прочитать из файла? [Y/n]"))
+            {
+                Console.WriteLine("пропускаю чтение из файла!\n");
+            }
+            else
+            {
+                string file = "";
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Title = "Выбери файл с числом";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    file = openFileDialog.FileName;
+                    Console.WriteLine($"TYPE 2: Берем N({N}) из {file}");
 
+                    N = readFile(file);
+                    List<string> mFromFile = calc(N);
+                    M = mFromFile.Count;
+                    Console.WriteLine($"M = {M}\n");
+                    timeSpan = DateTime.Now - dateTimeStart;
+                    Console.WriteLine($"Выполнено за {timeSpan}\n");
+
+                    
+                    if (answerNo("Записать данные в файл?[Y/n]")) 
+                    { Console.WriteLine("Пропускаю запись в файл."); }
+                    else
+                    {
+                        SaveFileDialog saveFileDialog = new SaveFileDialog();
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+
+                            writeFile(saveFileDialog.FileName, mFromFile);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Вы отменили сохранение файла. Файл не будет записан!");
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Вы отменили выбор файла! Пропускаю чтение из файла");
+                }
+            }
+            Console.WriteLine("Press any key for continue");
             Console.ReadKey();
 
 
 
         }
+        static bool answerNo(string _text)
+        {
+            Console.WriteLine(_text);
 
+            var answer = Console.ReadKey();
+            Console.WriteLine("\n");
+            return ConsoleKey.N == answer.Key;
+        }
         #region РАБОТА С ФАЙЛАМИ
         /// <summary>
         /// Чтение файла
@@ -175,13 +227,19 @@ namespace Homework_06
         /// <returns></returns>
         static int readFile(string fileName = "")
         {
+            if (fileName.Trim() == "")
+            {
+                Console.WriteLine("Пустое имя файла! Пропускаю!");
+                return 0;
+            }
             int ret = 0;
 
             FileInfo file = new FileInfo(fileName);
             if (!file.Exists) return 0;
 
             StreamReader streamReader = new StreamReader(fileName);
-
+            string fileContent = streamReader.ReadToEnd();
+            int.TryParse(fileContent, out ret);
 
             return ret;
         }
@@ -191,13 +249,24 @@ namespace Homework_06
         /// </summary>
         /// <param name="fileName">путь к файлу</param>
         /// <param name="text">текст, который надо записать</param>
-        static void writeFile(string fileName = "", string text = "")
+        static void writeFile(string fileName , List<string> _list)
         {
+            if (fileName.Trim() == "") 
+            {
+                Console.WriteLine("Пустое имя файла! Пропускаю!");
+                return; 
+            }
             FileInfo file = new FileInfo(fileName);
             try
             {
                 StreamWriter streamWriter = new StreamWriter(fileName);
-                streamWriter.Write(text);
+                foreach (string text in _list)
+                {
+                    if (text.Trim() == "") continue;
+                    streamWriter.WriteLine(text);
+                    //streamWriter.WriteLine(text.Replace(';','\t'); // как вариант
+                }
+                
                 streamWriter.Close();
 
             }
