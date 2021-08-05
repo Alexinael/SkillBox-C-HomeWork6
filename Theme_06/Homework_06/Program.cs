@@ -19,6 +19,7 @@ namespace Homework_06
         /// <returns></returns>
         static int[] addToArray(ref int[] array, int i)
         {
+            // НЕ ПРИГОДИЛОСЬ В ФИНАЛЬНОМ РЕШЕНИИ
             Array.Resize(ref array, array.Length + 1);
             array[array.Length - 1] = i;
 
