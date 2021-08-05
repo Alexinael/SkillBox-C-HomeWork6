@@ -83,7 +83,7 @@ namespace Homework_06
                 Console.WriteLine("\n");
             }
 
-            return m;
+            return list.Count;
         }
         #endregion
 
@@ -150,10 +150,17 @@ namespace Homework_06
             ///   Как пометками, так и xml документацией
             ///   В обязательном порядке создать несколько собственных методов
             ///   
+            int N = 50;
+            Console.WriteLine($"TYPE 1: variable N={N}\n");
             DateTime dateTimeStart = DateTime.Now;
-            Console.WriteLine($"{calc(50)}");
+            int M = calc(N);
+            Console.WriteLine($"M = {M}\n");
             TimeSpan timeSpan = DateTime.Now - dateTimeStart;
-            Console.WriteLine($"Выполнено за {timeSpan}");
+            Console.WriteLine($"Выполнено за {timeSpan}\n");
+
+            string file = "";
+            Console.WriteLine($"TYPE 2: varibale N from {file} = {N}");
+
             Console.ReadKey();
 
 
