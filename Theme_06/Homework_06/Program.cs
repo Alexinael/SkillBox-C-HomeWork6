@@ -6,25 +6,13 @@ using System.Threading.Tasks;
 
 using System.IO;
 using System.Windows.Forms;
+using System.IO.Compression;
 
 namespace Homework_06
 {
     class Program
     {
-        /// <summary>
-        /// Добавить элемент в массив
-        /// </summary>
-        /// <param name="array">Исходный массив</param>
-        /// <param name="i">Число для добавления</param>
-        /// <returns></returns>
-        static int[] addToArray(ref int[] array, int i)
-        {
-            // НЕ ПРИГОДИЛОСЬ В ФИНАЛЬНОМ РЕШЕНИИ
-            Array.Resize(ref array, array.Length + 1);
-            array[array.Length - 1] = i;
-
-            return array;
-        }
+       
         static string[] addToArray(ref string[] array, int i)
         {
             Array.Resize(ref array, array.Length + 1);
@@ -99,6 +87,44 @@ namespace Homework_06
         }
         #endregion
 
+        #region
+        static string[] calc2Rec(int i)
+        {
+            float half = i / 2;
+            int length = Convert.ToInt32(Math.Floor(half) + 1);
+
+            int[] ret = new int[length];
+            List<string> list = new List<string>();
+            for (int j = length; j <= i; j++)
+            {
+                list.Add($"{j}");
+            }
+            return list.ToArray();
+        }
+        static List<string> calc2(int n = 0)
+        {
+            List<string> list = new List<string>();
+            if ( n == 0 ) { return list; }
+            //В 1 - ю группу попадают все числа от floor(N/ 2) +1 до N, где floor - целая часть числа.
+            //Эти числа заведомо не могут делить друг друга, т.к.они больше половины N.
+            //Получается, мы задачу свели к "уполовиненной": теперь нужно следующую группу
+            //получить для числа floor(N/ 2) по тому же алгоритму.
+            float half = n / 2;
+            int length = Convert.ToInt32(Math.Floor(half) + 1);
+            int nextInt = n;
+            while(nextInt >= 1)
+            {
+
+                list.Add(String.Join(";",calc2Rec(nextInt)));
+                float div = nextInt / 2;
+                nextInt = Convert.ToInt32(Math.Floor(div));
+            }
+            
+
+            return list;
+        }
+        #endregion
+
         [STAThread]
         static void Main(string[] args)
         {
@@ -163,11 +189,14 @@ namespace Homework_06
             ///   Как пометками, так и xml документацией
             ///   В обязательном порядке создать несколько собственных методов
             ///   
-            int N = 50;
+            int N = 17;
             Console.WriteLine($"TYPE 1: Входящее N={N}\n");
             DateTime dateTimeStart = DateTime.Now;
             int M = calc(N).Count;
             Console.WriteLine($"M = {M}\n");
+
+            M = calc2(N).Count;
+
             TimeSpan timeSpan = DateTime.Now - dateTimeStart;
             Console.WriteLine($"Выполнено за {timeSpan}\n");
 
@@ -201,7 +230,8 @@ namespace Homework_06
                         if (saveFileDialog.ShowDialog() == DialogResult.OK)
                         {
 
-                            writeFile(saveFileDialog.FileName, mFromFile);
+                            writeFile(saveFileDialog.FileName, mFromFile, !answerNo("Заархивировать файл? [Y/n]"));
+                           
                         }
                         else
                         {
@@ -258,7 +288,7 @@ namespace Homework_06
         /// </summary>
         /// <param name="fileName">путь к файлу</param>
         /// <param name="text">текст, который надо записать</param>
-        static void writeFile(string fileName , List<string> _list)
+        static void writeFile(string fileName , List<string> _list, bool appendCompressed = false)
         {
             if (fileName.Trim() == "") 
             {
@@ -278,6 +308,22 @@ namespace Homework_06
                 
                 streamWriter.Close();
 
+                if (appendCompressed )
+                {
+                    using(FileStream sourceFile = new FileStream(fileName, FileMode.OpenOrCreate))
+                    {
+                        using (FileStream destFile = File.Create(fileName+".zip"))
+                        {
+                            using (GZipStream zipFile = new GZipStream(destFile, CompressionMode.Compress))
+                            {
+                                sourceFile.CopyTo(zipFile);
+                                Console.WriteLine("Сжат файл {0}. Было {1}, стало {2}",
+                                    fileName, sourceFile.Length , zipFile.Length);
+                            }
+                        }
+                    }
+                }
+                
             }
             catch (Exception error)
             {
@@ -285,6 +331,8 @@ namespace Homework_06
                 Console.WriteLine($"ERROR WITH WRITE TO FILE : {error}");
             }
         }
+        
+
         #endregion
 
     }
